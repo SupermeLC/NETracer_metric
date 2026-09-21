@@ -1,51 +1,121 @@
 # NETracer Metric
 
-这是 NETracer（ICCV 2025）提出的三项迭代追踪指标的独立、可审计实现：
+这是 NETracer（ICCV 2025）提出的三个追踪评估指标的独立实现。
 
 | 指标 | 衡量内容 | 趋势 |
 |---|---|---:|
-| PE（Position Error） | 匹配节点的局部位置精度 | 越低越好 |
-| ABL（Average Branch Length） | 重建分支的连续性 | 越高越好 |
-| JE（Jump Error） | 跳到相邻错误分支的拓扑错误 | 越低越好 |
+| PE（Position Error） | 匹配节点的位置误差 | 越低越好 |
+| ABL（Average Branch Length） | 预测分支的连续性 | 越高越好 |
+| JE（Jump Error） | 从一条邻近分支跳到另一条分支的错误连接 | 越低越好 |
 
-完整定义、公式、边界条件、命令行和 Python API 请阅读
-[英文主 README](README.md)。
-
-## 安装与快速使用
+## 安装
 
 ```bash
 git clone https://github.com/SupermeLC/NETracer_metric.git
 cd NETracer_metric
 python -m pip install -e .
-
-netracer-metrics pair gold.swc prediction.swc
 ```
 
-批量评测使用包含 `case_id,gold,test` 三列的 CSV：
+## Python 快速开始
+
+```python
+from netracer_metrics import evaluate_files
+
+result = evaluate_files(
+    "examples/road_crop/gold.swc",
+    "examples/road_crop/prediction.swc",
+)
+
+print(f"PE: {result.pe.value:.3f}")
+print(f"Matched fraction: {result.pe.matched_fraction:.3f}")
+print(f"ABL: {result.abl.value:.3f}")
+print(f"JE: {result.je.value}")
+```
+
+预期输出：
+
+```text
+PE: 1.177
+Matched fraction: 0.574
+ABL: 47.416
+JE: 0
+```
+
+使用自己的数据时只需替换路径：
+
+```python
+result = evaluate_files("gold.swc", "prediction.swc")
+```
+
+也可以直接从命令行运行：
 
 ```bash
-netracer-metrics batch manifest.csv --output-dir results
+python -m netracer_metrics pair gold.swc prediction.swc
 ```
 
-## 三个指标的核心理解
+## 指标解释
 
-**PE**：对每个预测节点寻找最近 gold 节点，只统计距离严格小于
-`epsilon` 的匹配。它衡量“已经靠近标注的节点到底有多准”。必须同时查看
-`matched_fraction`，因为未匹配节点不会进入 PE 平均值。
+### PE — Position Error
 
-**ABL**：预测图的总边长除以“根节点数 + 分叉节点数”。它衡量典型分支能
-连续追踪多远。ABL 不检查分支是否走对，因此必须结合 PE 和 JE 解读。
+PE 为每个预测节点寻找最近的 gold 节点。距离小于匹配阈值（默认 2）的
+预测节点视为匹配，PE 是这些匹配节点距离的平均值。
 
-**JE**：将预测节点及其父节点映射到 gold 图。如果两个匹配点空间上很近，
-但沿 gold 图的路径距离远大于直线距离，就说明预测边从一条分支跳到了邻近
-分支，记一次 Jump Error。
+PE 越低表示匹配节点的位置越准确。需要同时查看 `matched_fraction`：未匹配
+节点不会进入 PE 平均值，因此只看 PE 不能判断覆盖率。
 
-## 重要复现说明
+公开算法使用点到点距离，所以 SWC 节点的采样密度也会影响 PE。
 
-公开补充材料与旧实验代码并不完全一致：旧 PE 使用点到边距离和硬编码阈值
-5，旧 JE 还有补充材料中未写出的绝对距离条件。本仓库默认严格实现公开算法，
-差异详见 [协议说明](docs/protocol-notes.md)。因此，在复现旧论文表格前必须先
-明确采用“公开算法协议”还是“旧代码兼容协议”。
+### ABL — Average Branch Length
 
-仓库只包含合成样例和一个很小的 ROAD 坐标裁剪，不包含原图、完整标注或
-大规模原始数据。
+ABL 是预测图的总长度除以分支数量，用来表示预测分支能连续追踪多远。
+ABL 越高通常表示连续性越好。
+
+ABL 不使用 gold 图，因此长分支不一定是正确分支，需要结合 PE 和 JE 解读。
+
+### JE — Jump Error
+
+JE 检查预测图中的每条父子边，并把边的两个端点映射到 gold 图。如果两个
+端点在空间中很近，但沿 gold 图需要走很远，说明预测可能从一条邻近分支跳到
+了另一条分支，记作一次 Jump Error。
+
+JE 越低越好。它是错误次数，因此不同方法必须在相同样本和预处理下比较。
+
+## 输入要求
+
+SWC 每行至少包含：
+
+```text
+id type x y z radius parent
+```
+
+gold 和 prediction 必须使用相同的坐标系和单位。二维数据令 `z = 0`，根节点
+使用 `parent = -1`。
+
+## 批量评测（可选）
+
+需要评测多个样本时，创建 CSV：
+
+```csv
+case_id,gold,test
+sample_01,gold/sample_01.swc,pred/sample_01.swc
+sample_02,gold/sample_02.swc,pred/sample_02.swc
+```
+
+然后运行：
+
+```bash
+python -m netracer_metrics batch manifest.csv --output-dir results
+```
+
+程序会生成逐样本结果 `per_case.csv` 和数据集汇总 `summary.json`。
+
+## 样例与复现说明
+
+仓库只包含一个合成样例和一个很小的 ROAD 坐标裁剪，不包含原图、完整标注
+或完整数据集。
+
+本仓库默认实现论文补充材料中的公开算法。旧实验代码中的 PE 和 JE 存在一些
+不同规则；需要复现历史实验表格时请阅读
+[协议说明](docs/protocol-notes.md)。
+
+英文主文档见 [README.md](README.md)。
