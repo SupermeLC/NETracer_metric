@@ -17,11 +17,6 @@ Tubular Structure Extraction** (ICCV 2025):
 The package evaluates 2D or 3D rooted forests stored in standard SWC files. It
 is independent of the NETracer training code and PyNeval.
 
-> [!IMPORTANT]
-> This repository follows the **published supplementary algorithms** for PE and
-> JE. The original experiment workspace contains older hard-coded variants.
-> Those differences are documented in [Protocol notes](docs/protocol-notes.md)
-> and can change reported values.
 
 ## Installation
 
