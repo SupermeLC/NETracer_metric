@@ -1,0 +1,3 @@
+# This direct edge jumps between two nearby but geodesically distant gold nodes.
+10 2 0 0 0 1 -1
+11 2 0 1 0 1 10

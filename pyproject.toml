@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netracer-metrics"
+version = "0.1.0"
+description = "Reproducible PE, ABL and JE metrics for NETracer-style tubular graph evaluation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+  {name = "NETracer authors"},
+]
+keywords = ["SWC", "tubular structures", "graph evaluation", "neuron tracing", "road extraction"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Image Processing",
+]
+dependencies = [
+  "numpy>=1.21",
+]
+
+[project.optional-dependencies]
+fast = ["scipy>=1.8"]
+dev = ["pytest>=7", "scipy>=1.8"]
+
+[project.urls]
+Homepage = "https://github.com/SupermeLC/NETracer_metric"
+Repository = "https://github.com/SupermeLC/NETracer_metric"
+Issues = "https://github.com/SupermeLC/NETracer_metric/issues"
+Paper = "https://openaccess.thecvf.com/content/ICCV2025/html/Liu_NETracer_A_Topology-Aware_Iterative_Tracing_Approach_for_Tubular_Structure_Extraction_ICCV_2025_paper.html"
+
+[project.scripts]
+netracer-metrics = "netracer_metrics.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

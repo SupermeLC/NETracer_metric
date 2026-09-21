@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use these metrics, please cite the NETracer paper."
+title: "NETracer tracing metrics"
+type: software
+version: 0.1.0
+authors:
+  - family-names: Liu
+    given-names: Chao
+  - family-names: Jiang
+    given-names: Yangbo
+  - family-names: Zheng
+    given-names: Nenggan
+preferred-citation:
+  type: conference-paper
+  title: "NETracer: A Topology-Aware Iterative Tracing Approach for Tubular Structure Extraction"
+  authors:
+    - family-names: Liu
+      given-names: Chao
+    - family-names: Jiang
+      given-names: Yangbo
+    - family-names: Zheng
+      given-names: Nenggan
+  collection-title: "Proceedings of the IEEE/CVF International Conference on Computer Vision"
+  year: 2025
+  start: 20593
+  end: 20602
+repository-code: "https://github.com/SupermeLC/NETracer_metric"
+license: MIT

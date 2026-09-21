@@ -1,0 +1,6 @@
+include LICENSE
+include CITATION.cff
+include README.md
+include README_zh-CN.md
+recursive-include docs *.md
+recursive-include examples *.md *.csv *.swc
